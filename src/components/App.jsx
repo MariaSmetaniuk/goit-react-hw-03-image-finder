@@ -1,16 +1,12 @@
+import { GlobalStyle } from './GlobalStyle';
+import { Searchbar } from './Searchbar/Searchbar';
+import { AppContainer } from './App.styled';
+
 export const App = () => {
   return (
-    <div
-      style={{
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: 40,
-        color: '#010101'
-      }}
-    >
-      React homework template
-    </div>
+    <AppContainer>
+      <Searchbar />
+      <GlobalStyle />
+    </AppContainer>
   );
 };

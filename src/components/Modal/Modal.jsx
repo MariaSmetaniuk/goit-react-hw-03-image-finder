@@ -4,13 +4,28 @@ import { Overlay, ModalContent } from './Modal.styled';
 
 export class Modal extends Component {
   componentDidMount() {
-    console.log('ModalMount');
+    window.addEventListener('keydown', this.handleEscClick);
   }
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.handleEscClick);
+  }
+
+  handleEscClick = e => {
+    if (e.code === 'Escape') {
+      this.props.closeModal();
+    }
+  };
+
+  handleBackdropClick = e => {
+    if (e.target === e.currentTarget) {
+      this.props.closeModal();
+    }
+  };
 
   render() {
     const { largeImageURL } = this.props;
     return (
-      <Overlay>
+      <Overlay onClick={this.handleBackdropClick}>
         <ModalContent>
           <img src={largeImageURL} alt="" />
         </ModalContent>
@@ -21,4 +36,5 @@ export class Modal extends Component {
 
 Modal.propTypes = {
   largeImageURL: PropTypes.string.isRequired,
+  closeModal: PropTypes.func.isRequired,
 };

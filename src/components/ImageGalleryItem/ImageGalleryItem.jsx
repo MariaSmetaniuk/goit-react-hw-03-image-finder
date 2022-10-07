@@ -8,18 +8,22 @@ export class ImageGalleryItem extends Component {
     isModalOpen: false,
   };
 
-  toggleModal = () => {
-    this.setState(prevState => {
-      return { isModalOpen: !prevState.isModalOpen };
-    });
+  openModal = () => {
+    this.setState({ isModalOpen: true });
+  };
+
+  closeModal = () => {
+    this.setState({ isModalOpen: false });
   };
 
   render() {
     const { webformatURL, largeImageURL } = this.props;
     return (
       <Item>
-        <ItemImg src={webformatURL} alt="" onClick={this.toggleModal} />
-        {this.state.isModalOpen && <Modal largeImageURL={largeImageURL} />}
+        <ItemImg src={webformatURL} alt="" onClick={this.openModal} />
+        {this.state.isModalOpen && (
+          <Modal largeImageURL={largeImageURL} closeModal={this.closeModal} />
+        )}
       </Item>
     );
   }

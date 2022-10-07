@@ -4,6 +4,7 @@ import { GetImages } from '../services/api';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Loader } from './Loader/Loader';
+import { Notification } from './Notification/Notification';
 import { LoadMoreButton } from './Button/Button';
 import { AppContainer } from './App.styled';
 
@@ -15,26 +16,59 @@ export class App extends Component {
     per_page: 12,
     totalPages: 0,
     isLoading: false,
+    error: {
+      status: false,
+      message: '',
+    },
   };
 
-  async componentDidUpdate(_, prevState) {
-    const { query, page, per_page } = this.state;
-
+  componentDidUpdate(_, prevState) {
+    const { query, page } = this.state;
     if (prevState.query !== query || prevState.page !== page) {
-      try {
-        this.setState({ isLoading: true });
-        const data = await GetImages(query, page, per_page);
-        const totalPages = Math.ceil(data.totalHits / per_page);
-        this.setState({
-          cards: [...prevState.cards, ...data.hits],
-          totalPages,
-        });
-        this.setState({ isLoading: false });
-      } catch (error) {
-        console.log('componentDidUpdate error', error);
-      }
+      this.handleFetchImages();
     }
   }
+
+  handleFetchImages = async () => {
+    const { query, page, per_page } = this.state;
+    try {
+      this.setState({ isLoading: true });
+
+      const data = await GetImages(query, page, per_page);
+      const totalPages = Math.ceil(data.totalHits / per_page);
+
+      this.setState(prevState => {
+        return {
+          cards: [...prevState.cards, ...data.hits],
+          totalPages,
+        };
+      });
+      this.setState(prevState => {
+        return prevState.cards.length === 0
+          ? {
+              error: {
+                status: true,
+                message: `Sorry, there are no images matching ${query}. Please try again.`,
+              },
+            }
+          : {
+              error: {
+                status: false,
+                message: '',
+              },
+            };
+      });
+    } catch (error) {
+      this.setState({
+        error: {
+          status: true,
+          message: 'Something went wrong :( Please try again later!',
+        },
+      });
+    } finally {
+      this.setState({ isLoading: false });
+    }
+  };
 
   handleLoadMore = () => {
     this.setState(prevState => {
@@ -47,14 +81,19 @@ export class App extends Component {
   };
 
   render() {
-    const { cards, page, totalPages, isLoading } = this.state;
+    const { cards, page, totalPages, isLoading, error } = this.state;
+    const isCards = cards.length > 0;
+    const showError = error.status && !isLoading;
+    const errorMessage = error.message;
+    const buttonVisible = isCards && page < totalPages && !isLoading;
+
     return (
       <AppContainer>
         <Searchbar onSubmit={this.handleSubmit} />
-        {cards.length > 0 && <ImageGallery cards={cards} />}
+        {showError && <Notification message={errorMessage} />}
+        {isCards && <ImageGallery cards={cards} />}
         {isLoading && <Loader />}
-        {page < totalPages && <LoadMoreButton onClick={this.handleLoadMore} />}
-
+        {buttonVisible && <LoadMoreButton onClick={this.handleLoadMore} />}
         <GlobalStyle />
       </AppContainer>
     );

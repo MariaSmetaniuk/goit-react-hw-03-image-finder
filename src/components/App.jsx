@@ -40,6 +40,17 @@ export class App extends Component {
       this.setState({ isLoading: true });
 
       const data = await GetImages(query, page, per_page);
+
+      if (data.hits.length === 0) {
+        this.setState({
+          error: {
+            status: true,
+            message: `Sorry, there are no images matching ${query}. Please try again.`,
+          },
+        });
+        return;
+      }
+
       const totalPages = Math.ceil(data.totalHits / per_page);
 
       this.setState(prevState => {
@@ -47,21 +58,6 @@ export class App extends Component {
           cards: [...prevState.cards, ...data.hits],
           totalPages,
         };
-      });
-      this.setState(prevState => {
-        return prevState.cards.length === 0
-          ? {
-              error: {
-                status: true,
-                message: `Sorry, there are no images matching ${query}. Please try again.`,
-              },
-            }
-          : {
-              error: {
-                status: false,
-                message: '',
-              },
-            };
       });
     } catch (error) {
       this.setState({
@@ -82,7 +78,15 @@ export class App extends Component {
   };
 
   handleSubmit = query => {
-    this.setState({ cards: [], query, page: 1 });
+    this.setState({
+      cards: [],
+      query,
+      page: 1,
+      error: {
+        status: false,
+        message: '',
+      },
+    });
   };
 
   handleOpenModal = cardId => {

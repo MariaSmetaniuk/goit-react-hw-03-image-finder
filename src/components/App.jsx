@@ -4,6 +4,7 @@ import { GetImages } from '../services/api';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Loader } from './Loader/Loader';
+import { Modal } from './Modal/Modal';
 import { Notification } from './Notification/Notification';
 import { LoadMoreButton } from './Button/Button';
 import { AppContainer } from './App.styled';
@@ -16,6 +17,10 @@ export class App extends Component {
     per_page: 12,
     totalPages: 0,
     isLoading: false,
+    modal: {
+      status: false,
+      content: '',
+    },
     error: {
       status: false,
       message: '',
@@ -80,20 +85,47 @@ export class App extends Component {
     this.setState({ cards: [], query, page: 1 });
   };
 
+  handleOpenModal = cardId => {
+    const currentCard = this.state.cards.find(card => card.id === cardId);
+
+    this.setState({
+      modal: {
+        status: true,
+        content: currentCard.largeImageURL,
+      },
+    });
+  };
+
+  handleCloseModal = () => {
+    this.setState({
+      modal: {
+        status: false,
+        content: '',
+      },
+    });
+  };
+
   render() {
-    const { cards, page, totalPages, isLoading, error } = this.state;
+    const { cards, page, totalPages, isLoading, modal, error } = this.state;
+    const { handleSubmit, handleOpenModal, handleCloseModal, handleLoadMore } =
+      this;
     const isCards = cards.length > 0;
+    const isModalOpen = modal.status;
+    const modalContent = modal.content;
     const showError = error.status && !isLoading;
     const errorMessage = error.message;
     const buttonVisible = isCards && page < totalPages && !isLoading;
 
     return (
       <AppContainer>
-        <Searchbar onSubmit={this.handleSubmit} />
+        <Searchbar onSubmit={handleSubmit} />
         {showError && <Notification message={errorMessage} />}
-        {isCards && <ImageGallery cards={cards} />}
+        {isCards && <ImageGallery cards={cards} openModal={handleOpenModal} />}
         {isLoading && <Loader />}
-        {buttonVisible && <LoadMoreButton onClick={this.handleLoadMore} />}
+        {buttonVisible && <LoadMoreButton onClick={handleLoadMore} />}
+        {isModalOpen && (
+          <Modal largeImageURL={modalContent} closeModal={handleCloseModal} />
+        )}
         <GlobalStyle />
       </AppContainer>
     );

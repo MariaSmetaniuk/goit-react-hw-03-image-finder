@@ -5,11 +5,16 @@ import { ImageGalleryItem } from '../ImageGalleryItem/ImageGalleryItem';
 
 export class ImageGallery extends Component {
   render() {
-    const { cards } = this.props;
+    const { cards, openModal } = this.props;
     return (
       <Gallery>
-        {cards.map(({ id, ...otherProps }) => (
-          <ImageGalleryItem key={id} {...otherProps} />
+        {cards.map(({ id, webformatURL }) => (
+          <ImageGalleryItem
+            key={id}
+            itemId={id}
+            webformatURL={webformatURL}
+            openModal={openModal}
+          />
         ))}
       </Gallery>
     );
@@ -21,7 +26,7 @@ ImageGallery.propTypes = {
     PropTypes.shape({
       id: PropTypes.number.isRequired,
       webformatURL: PropTypes.string.isRequired,
-      largeImageURL: PropTypes.string.isRequired,
     })
   ),
+  openModal: PropTypes.func.isRequired,
 };
